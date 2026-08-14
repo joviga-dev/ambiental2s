@@ -95,7 +95,10 @@ A URL da API é definida através de uma constante no código, permitindo altera
 
 ```java
 private static final String API_URL =
-        "https://sua-api.com/api/registrar-feriados";
+        System.getenv().getOrDefault(
+                "API_URL",
+                "https://sua-api.com/api/registrar-feriados"
+        );
 ```
 
 > Para utilizar uma API diferente, basta alterar o valor da constante `API_URL`.
