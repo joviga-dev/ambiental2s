@@ -1,82 +1,250 @@
-<div align=center>
+# RPA Feriados — Selenium
 
-# Vaga Ambiental/2S
+RPA desenvolvido em **Java + Spring Boot + Selenium** para automatizar a consulta de feriados municipais e nacionais a partir de uma lista de cidades e estados.
 
-Este repositório tem o objetivo de testar suas habilidades com relação a criação de uma API REST utilizando o framework **Spring Boot**, juntamente com o banco de dados **Postgres**
+A aplicação realiza a leitura dos dados de entrada, automatiza a navegação no portal de feriados utilizando Selenium, armazena os resultados em **PostgreSQL** e disponibiliza o processamento para posterior integração com uma API REST.
 
-[Descrição do Problema](#page_facing_up-descrição-do-problema)  &nbsp;&bull;&nbsp; [Execução](#gear-executando-o-projeto) &nbsp;&bull;&nbsp; [Entrega](#package-entrega-do-projeto)
+## 🚀 Funcionalidades
 
-</div>
+* Leitura de cidades e estados a partir de dados de entrada
+* Automação de navegador utilizando Selenium WebDriver
+* Consulta de feriados municipais e nacionais
+* Extração das datas e informações dos feriados
+* Persistência dos dados em PostgreSQL
+* Integração com API REST
+* Execução containerizada utilizando Docker
+* Configuração através de variáveis de ambiente
 
-<br/>
-<br/>
+## 🏗️ Arquitetura
 
-## :page_facing_up: Descrição do problema
+O projeto utiliza uma arquitetura baseada em **Spring Boot**, separando as responsabilidades de automação, persistência e integração externa.
 
-Dada uma planilha de Excel contendo as colunas **estado** e **cidade**, monte um **RPA** em Java utilizando **Selenium**, de forma que ele leia os dados da planilha fornecida e busque dentro do site [feriados.com.br](https://www.feriados.com.br/) quais são os dias dos mêses em que essas cidades possuem feriados.
-
-Com essas informações em mãos, crie uma tabela no **postgres** para salvar os dados recém coletados. Dados esses, que deverão ser enviados para nossa **API**, que realizará um teste, retornando uma mensagem de sucesso ou erro.
-
-
-### :pushpin: Etapas
-
-1. Faça o clone do projeto
-2. Monte uma lógica para extrair os dados do Excel que lhe foi enviado
-3. Monte um RPA utilizando **Selenium** para extrair os dados dos feriados municipais e nacionais do site `feriados.com.br` para cada cidade/estado contido na planilha
-4. Salve os dados extraídos no **Postgres** (necessário criar uma tabela para guardar os dados)
-5. Busque os dados do **Postgres** e envie-os a nossa [API](#api)
-
-### API
-
-Como última etapa do nosso processo de avaliação envie os dados que estão salvos no banco para nossa API conforme as especificações abaixo:
-
-- **MÉTODO:** `POST` 
-- **URL:** `https://spprev.ambientalqvt.com.br/api/dinamico/avaliacao-vaga/registrar-feriados`
-
-```txt
-    Autenticação:
-[BEARER TOKEN] <token_enviado>
+```text
+                    ┌─────────────────────┐
+                    │     Dados de        │
+                    │       entrada       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │     Spring Boot     │
+                    │      Application    │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │       Selenium      │
+                    │    Web Automation   │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │  Portal de Feriados │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │     PostgreSQL      │
+                    │    Persistência     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      REST API       │
+                    │     Integração      │
+                    └─────────────────────┘
 ```
+
+## 🛠️ Tecnologias
+
+| Tecnologia         | Utilização                            |
+| ------------------ | ------------------------------------- |
+| Java               | Linguagem principal                   |
+| Spring Boot        | Framework da aplicação                |
+| Selenium WebDriver | Automação e navegação web             |
+| PostgreSQL         | Persistência dos dados                |
+| Maven              | Gerenciamento de dependências e build |
+| Docker             | Containerização da aplicação          |
+| Docker Compose     | Orquestração dos containers           |
+
+## 🔄 Fluxo de execução
+
+O processamento segue as seguintes etapas:
+
+1. A aplicação recebe os dados de entrada contendo **estado e cidade**.
+2. Os dados são processados pela aplicação Spring Boot.
+3. O Selenium inicia o navegador e acessa o portal de feriados.
+4. Para cada cidade, o RPA realiza a consulta correspondente.
+5. Os feriados municipais e nacionais encontrados são extraídos.
+6. Os dados coletados são persistidos no PostgreSQL.
+7. Os registros armazenados são preparados no formato esperado pela API.
+8. A aplicação envia os dados através de uma requisição HTTP `POST`.
+9. O retorno da API é processado para identificar sucesso ou erro na operação.
+
+## 🗄️ Persistência
+
+Os dados coletados pelo RPA são armazenados em um banco **PostgreSQL**, permitindo que as informações obtidas durante a automação sejam persistidas antes da integração com o serviço externo.
+
+Essa abordagem também permite separar o processo de **coleta** do processo de **envio**, evitando que uma falha na API externa resulte na perda dos dados coletados.
+
+## 🌐 Integração com API
+
+Após a coleta e persistência dos dados, a aplicação realiza uma requisição `POST` para a API configurada no projeto.
+
+A URL da API é definida através de uma constante no código, permitindo alterar facilmente o endpoint conforme o ambiente ou serviço utilizado.
+
+```java
+private static final String API_URL =
+        "https://sua-api.com/api/registrar-feriados";
+```
+
+> Para utilizar uma API diferente, basta alterar o valor da constante `API_URL`.
+
+### Endpoint
+
+```http
+POST {API_URL}
+```
+
+### Autenticação
+
+A integração utiliza autenticação através de **Bearer Token**.
+
+```http
+Authorization: Bearer <TOKEN>
+```
+
+### Payload
 
 ```json
 {
-    "estado": "NOME_DO_ESTADO",
-    "cidade": "NOME_DA_CIDADE",
-    "feriados": [
-        {
-            "data": "DD/MM/YYYY",
-            "tipo": "MUNICIPAL | NACIONAL",
-            "feriado": "NOME_DO_FERIADO",
-        },
-        ...
-    ]
+  "estado": "São Paulo",
+  "cidade": "Bauru",
+  "feriados": [
+    {
+      "data": "01/01/2026",
+      "tipo": "NACIONAL",
+      "feriado": "Confraternização Universal"
+    },
+    {
+      "data": "XX/XX/2026",
+      "tipo": "MUNICIPAL",
+      "feriado": "Nome do Feriado"
+    }
+  ]
 }
 ```
 
-#### :heavy_check_mark: Retorno de Sucesso
+### Resposta
+
+Em caso de sucesso, a API não retorna conteúdo.
+
+Em caso de erro, é esperado um objeto contendo a mensagem correspondente:
 
 ```json
-// Não retorna dados
-```
-
-#### :x: Retorno de Erro
-
-```json
-{    
-    "mensagem": "MENSAGEM_DE_ERRO"
+{
+  "mensagem": "MENSAGEM_DE_ERRO"
 }
 ```
 
-<br/>
 
-## :gear: Executando o projeto
+## 🐳 Executando com Docker
+
+O projeto possui configuração para execução através do Docker Compose.
+
+### Pré-requisitos
+
+* Docker
+* Docker Compose
+
+### Inicialização
+
+Clone o repositório:
 
 ```bash
-docker-compose up --build
+git clone https://github.com/joviga-dev/RPA-Feriados-Selenium.git
 ```
 
-<br/>
+Entre no diretório:
 
-## :package: Entrega do projeto
+```bash
+cd RPA-Feriados-Selenium
+```
 
-Monte um repositório público e compartilhe conosco o link do seu repositório
+Execute os containers:
+
+```bash
+docker compose up --build
+```
+
+Após a inicialização, a aplicação estará disponível conforme as portas configuradas no `docker-compose.yml`.
+
+### Parar a aplicação
+
+```bash
+docker compose down
+```
+
+## ⚙️ Configuração
+
+As configurações sensíveis e específicas do ambiente devem ser fornecidas através de variáveis de ambiente.
+
+Exemplo:
+
+```env
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=feriados
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+
+API_URL=https://example.com/api
+API_TOKEN=your-token
+```
+
+> Não versionar tokens, senhas ou outras credenciais no repositório.
+
+## 🧪 Execução local
+
+Também é possível executar o projeto utilizando o Maven Wrapper.
+
+No Windows:
+
+```bash
+./mvnw.cmd spring-boot:run
+```
+
+No Linux/macOS:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Para gerar o build:
+
+```bash
+./mvnw clean package
+```
+
+## 📁 Estrutura do projeto
+
+```text
+RPA-Feriados-Selenium/
+├── .mvn/
+├── src/
+│   └── ...
+├── .env
+├── Dockerfile
+├── docker-compose.yml
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+└── README.md
+```
+
+## 🎯 Objetivo
+
+O projeto foi desenvolvido para demonstrar a construção de uma solução de **RPA integrada a uma aplicação backend**, combinando automação de navegador, persistência de dados e integração com APIs REST.
+
+A solução busca manter cada etapa do processo desacoplada, facilitando manutenção, execução em ambientes containerizados e futuras evoluções da automação.
+
